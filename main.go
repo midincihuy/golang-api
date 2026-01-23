@@ -146,7 +146,7 @@ func updateCategory(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// get data dari request
-	var updateCategory Produk
+	var updateCategory Category
 	err = json.NewDecoder(r.Body).Decode(&updateCategory)
 	if err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
