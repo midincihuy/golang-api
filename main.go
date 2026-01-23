@@ -231,6 +231,39 @@ func main(){
 		}
 	})
 
+	// GET Category
+	// POST Category
+	http.HandleFunc("/api/categories", func(w http.ResponseWriter, r *http.Request){
+		if r.Method == "GET" {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(category)
+		} else if r.Method == "POST" {
+			var categoryBaru Category
+			err := json.NewDecoder(r.Body).Decode(&categoryBaru)
+			if err != nil {
+				http.Error(w, "Invalid Request", http.StatusBadRequest)
+				return
+			}
+
+			categoryBaru.ID = len(category) + 1
+			category = append(category, categoryBaru)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusCreated) // 201
+			json.NewEncoder(w).Encode(categoryBaru)
+		}
+	})
+
+	// GET Category by ID
+	http.HandleFunc("/api/categories/", func(w http.ResponseWriter, r *http.Request){
+		if r.Method == "GET" {
+			getCategoryByID(w, r)
+		} else if r.Method == "PUT" {
+			updateCategory(w, r)
+		} else if r.Method == "DELETE" {
+			deleteCategory(w, r)
+		}
+	})
+
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request){
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]string{
