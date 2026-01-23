@@ -102,6 +102,100 @@ func deleteProduk(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Produk belum ada", http.StatusNotFound)
 }
 
+
+type Category struct {
+	ID int `json:"id"`
+	Name string `json:"name"`
+	Description string `json:"description"`
+}
+
+var category = []Category{
+	{ID: 1, Name: "Makanan", Description: "Category Makanan"},
+	{ID: 2, Name: "Minuman", Description: "Category Minuman"},
+	{ID: 3, Name: "Cemilan", Description: "Category Cemilan"},
+}
+
+func getCategoryByID(w http.ResponseWriter, r *http.Request){
+	idStr := strings.TrimPrefix(r.URL.Path, "/api/categories/")
+	id, err := strconv.Atoi(idStr)
+	if err != nil{
+		http.Error(w, "Invalid Category ID", http.StatusBadRequest)
+		return
+	}
+
+	for _, p := range category {
+		if p.ID == id {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(p)
+			return
+		}
+	}
+
+	http.Error(w, "Category Belum ada", http.StatusNotFound)
+}
+
+func updateCategory(w http.ResponseWriter, r *http.Request) {
+	// get id dari request
+	idStr := strings.TrimPrefix(r.URL.Path, "/api/categories/")
+
+	// ganti int
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid Category ID", http.StatusBadRequest)
+		return
+	}
+
+	// get data dari request
+	var updateCategory Produk
+	err = json.NewDecoder(r.Body).Decode(&updateCategory)
+	if err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	// loop category, cari id, ganti sesuai data dari request
+	for i := range category {
+		if category[i].ID == id {
+			updateCategory.ID = id
+			category[i] = updateCategory
+
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(updateCategory)
+			return
+		}
+	}
+	
+	http.Error(w, "Category belum ada", http.StatusNotFound)
+}
+
+func deleteCategory(w http.ResponseWriter, r *http.Request) {
+	// get id
+	idStr := strings.TrimPrefix(r.URL.Path, "/api/categories/")
+	
+	// ganti id int
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid Category ID", http.StatusBadRequest)
+		return
+	}
+	
+	// loop category cari ID, dapet index yang mau dihapus
+	for i, p := range category {
+		if p.ID == id {
+			// bikin slice baru dengan data sebelum dan sesudah index
+			category = append(category[:i], category[i+1:]...)
+			
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]string{
+				"message": "sukses delete",
+			})
+			return
+		}
+	}
+
+	http.Error(w, "Category belum ada", http.StatusNotFound)
+}
+
 func main(){
 
 	// GET Produk 
